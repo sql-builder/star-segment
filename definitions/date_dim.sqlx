@@ -1,0 +1,45 @@
+config {
+  type: "table",
+  tags: ["date dim", "dates"],
+  description: "Date dim for table references",
+}
+
+WITH DATE_RANGE AS (
+select DATEADD(DAY,(row_number() over (order by seq4()) -1),'2000-01-01') AS START_DATE 
+    from table(generator(rowcount => 21900))
+)
+SELECT
+  TO_CHAR(START_DATE,'YYYY-MM-DD')                                 AS CALENDAR_DATE
+  ,TO_CHAR(START_DATE,'DD-MON-YY')                                  AS CALENDAR_DATE_STR
+  ,TO_CHAR(START_DATE,'MM/DD/YYYY')                                 AS CALENDAR_DATE_ALT
+  ,YEAR(START_DATE)                                                 AS CALENDAR_YEAR
+  ,'CY '||YEAR(START_DATE)                                          AS CALENDAR_YEAR_DESC
+  ,QUARTER(START_DATE)                                              AS CALENDAR_QUARTER
+  ,'QTR '||QUARTER(START_DATE)                                      AS CALENDAR_QUARTER_DESC
+  ,YEAR(START_DATE)||QUARTER(START_DATE)                            AS CALENDAR_QUARTER_YEAR
+  ,MONTH(START_DATE)                                                AS MONTH_NO_OF_YEAR
+  ,YEAR(START_DATE)||LPAD(MONTH(START_DATE),2,'0')                  AS MONTH_YEAR
+  ,TO_CHAR(START_DATE,'MMMM')                                       AS MONTH_NAME
+  ,TO_CHAR(START_DATE,'MON-YY')                                     AS MONTH_YEAR_DESC
+  ,TO_CHAR(START_DATE,'MON-YY')                                     AS MONTH_YEAR_ALT
+  ,DAYOFMONTH(START_DATE)                                           AS DAY_NO_OF_MONTH
+  ,DAYOFMONTH(LAST_DAY(START_DATE,'month'))                         AS NO_OF_DAYS_IN_MONTH
+  ,DAYOFYEAR(START_DATE)                                            AS DAY_NO_OF_YEAR
+  ,WEEKOFYEAR(START_DATE)                                           AS WEEK_NO_YEAR
+  ,YEAR(START_DATE)||LPAD(WEEKOFYEAR(START_DATE),2,'0')             AS WEEK_YEAR
+  ,WEEKISO(START_DATE)                                              AS ISO_WEEK_NO_OF_YEAR
+  ,YEAR(START_DATE)||LPAD(WEEKISO(START_DATE),2,'0')                AS ISO_WEEK_YEAR
+  ,DAYOFWEEK(START_DATE)                                            AS DAY_OF_WEEK
+  ,DECODE(DAYNAME(START_DATE),
+    'Mon','Monday','Tue','Tuesday',
+    'Wed','Wednesday','Thu','Thursday',
+    'Fri','Friday','Sat','Saturday',
+          'Sun','Sunday')                                           AS DAY_OF_WEEK_NAME 
+  ,IFF(DAYOFWEEK(START_DATE) between 1 and 5,1,0)                   AS IS_WEEK_DAY_FLAG
+  ,IFF(DAYOFWEEK(START_DATE) between 1 and 5,'Weekday','Weekend')   AS IS_WEEK_DAY_DESC
+  ,DATEDIFF('year',CURRENT_DATE(),START_DATE)                       AS CURRENT_YEAR
+  ,DATEDIFF('month',CURRENT_DATE(),START_DATE)                      AS CURRENT_MONTH
+  ,DATEDIFF('day',CURRENT_DATE(),START_DATE)                        AS CURRENT_DAY
+
+FROM DATE_RANGE DG
+order by calendar_date desc

@@ -1,0 +1,6 @@
+{
+    "warehouse": "snowflake",
+    "defaultSchema": "public",
+    "defaultDatabase": "juicebox",
+    "assertionSchema": "test_assertions"
+}
