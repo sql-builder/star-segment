@@ -24,7 +24,7 @@ with users_first as (
       ${USER} as user_id,
       ${sql.windowFunction(
             'first_value',
-            'coalesce(identifies.original_timestamp,identifies.timestamp)',
+            'identifies.timestamp',
             true,
             {
               partitionFields: [USER],
@@ -116,19 +116,19 @@ select
     dates.calendar_date_alt,
     dates.day_no_of_month,
     dates.week_no_year,
-    datediff(week, date(date_trunc(week, (select min(first_seen_ts) as dayZero from users_first))),
-    date(date_trunc(week, users_first.first_seen_ts))
+    datediff(week, date(date_trunc(week, (select min(first_seen_at) as dayZero from users_first))),
+    date(date_trunc(week, users_first.first_seen_at))
     ) as cohort_week_number,
     datediff(month,
-    date(date_trunc(month, (select min(first_seen_ts) as dayZero from users_first))),
-    date(date_trunc(month, users_first.first_seen_ts))
+    date(date_trunc(month, (select min(first_seen_at) as dayZero from users_first))),
+    date(date_trunc(month, users_first.first_seen_at))
     ) as cohort_month_number,
     users_first.*
 from ${ctx.ref('date_dim')} as dates
-left join users_first 
-  on dates.date_at = date(users_first.first_seen_at)
+left join users_first
+  on dates.calendar_date = date(users_first.first_seen_at)
 where
-  dates.date_at >= (select min(first_seen_at) as day0 from users_first)
-  and dates.date_at <= CURRENT_DATE()
+  dates.calendar_date >= (select min(date(first_seen_at)) as day0 from users_first)
+  and dates.calendar_date <= CURRENT_DATE()
 `)
 }

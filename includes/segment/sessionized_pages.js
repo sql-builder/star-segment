@@ -11,7 +11,6 @@ module.exports = (params) => {
 select
   segment_sessionized_events.session_index,
   segment_sessionized_events.session_id,
-  segment_sessionized_events.source,
   segment_page_events.*   
 from 
   ${ctx.ref(params.defaultConfig.schema, 'segment_user_events')} as segment_sessionized_events

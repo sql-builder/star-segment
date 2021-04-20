@@ -51,11 +51,13 @@ select
     segment_user_anonymous_map.user_id,
     segment_events_combined.anonymous_id
   ) as user_id,
-  segment_users.week_of_month,
-  segment_users.week_of_year,
-  segment_users.first_day_of_week,
-  segment_users.last_day_of_week,
+
+  segment_users.calendar_date,
+  segment_users.calendar_date_alt,
+  segment_users.day_no_of_month,
+  segment_users.week_no_year,
   segment_users.cohort_week_number,
+  segment_users.cohort_month_number,
   segment_users.first_seen_at,
 
   segment_events_combined.id,

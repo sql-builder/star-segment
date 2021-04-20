@@ -13,9 +13,10 @@ module.exports = (params) => {
         `select
           'segment'            as source,
           'screen_loaded'      as event, 
-          'Screen Loaded'.     as event_name,
+          'Screen Loaded'      as event_name,
           '${schema}'||'.'||'screens' as source_table,
           current_timestamp()   as updated_dt,
+          NULL as anonymous_id,
 
           ${Object.entries(params.defaultScreenFields).map(
             ([key, value]) => `${key} as ${value}`).join(',\n    ')}

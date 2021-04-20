@@ -9,21 +9,41 @@ module.exports = (params) => {
     },
     ...params.defaultConfig
   }).query(ctx => `
- ${params.includeTrackSchemas.map((schema) => 
+ ${params.frontendTrackSchemas.map((schema) =>
     `select
         'segment'           as source,
         '${schema}'||'.'||'tracks' as source_table,
         current_timestamp() as updated_dt,
+        anonymous_id,
 
         ${Object.entries(params.defaultTrackFields).map(
           ([key, value]) => `${key} as ${value}`).join(',\n    ')}
         
-        ${Object.keys(params.customTrackFields).length ? `,` : ``}
-
-        ${Object.entries(params.customTrackFields).map(
+        ${Object.keys(params.frontendTrackFields).length ? `,` : ``}
+        ${Object.entries(params.frontendTrackFields).map(
             ([key, value]) => `${key} as ${value}`).join(',\n    ')}
       from 
         ${ctx.ref(`${schema}`, `tracks`)}
-  `).join(`\nunion all \n`)}
+  `).join(`\nunion all \n`)
+}
+UNION ALL
+
+${params.backendTrackSchemas.map((schema) =>
+  `select
+      'segment'           as source,
+      '${schema}'||'.'||'tracks' as source_table,
+      current_timestamp() as updated_dt,
+      NULL as anonymous_id,
+
+      ${Object.entries(params.defaultTrackFields).map(
+        ([key, value]) => `${key} as ${value}`).join(',\n    ')}
+      
+      ${Object.keys(params.backendTrackFields).length ? `,` : ``}
+      ${Object.entries(params.backendTrackFields).map(
+        ([key, value]) => `${key} as ${value}`).join(',\n    ')}
+    from 
+      ${ctx.ref(`${schema}`, `tracks`)}
+`).join(`\nunion all \n`)
+}
 `)
 }

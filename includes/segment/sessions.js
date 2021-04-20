@@ -87,7 +87,9 @@ select
   segment_sessionized_events.session_index,
   segment_sessionized_events.user_id,
   min(segment_sessionized_events.timestamp) as session_start_timestamp,
-  max(segment_sessionized_events.timestamp) as session_end_timestamp,
+  max(segment_sessionized_events.timestamp) as session_end_timestamp
+
+  ${Object.keys(params.customUserFields).length ? `,` : ``}
   ${Object.entries(params.customUserFields).map(
         ([key, value]) => `segment_sessionized_events.${value}`).join(',\n    ')},
 
@@ -101,24 +103,24 @@ select
   -- first values in the session for page fields
   ${params.includePages ? 
   `, ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `struct(\n  `)}
-  ${Object.entries(segmentCommon.allPageFields(params)).map(
+  ${Object.entries(params.customPageFields).map(
       ([key, value]) => `first_and_last_page_values.first_${value}`).join(',\n  ')}
   ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `) as first_page_values`)},
   -- last values in the session for page fields
   ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `struct(\n  `)}
-  ${Object.entries(segmentCommon.allPageFields(params)).map(
+  ${Object.entries(params.customPageFields).map(
       ([key, value]) => `first_and_last_page_values.last_${value}`).join(',\n  ')}
   ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `) as last_page_values`)}` : `` }
 
   -- first values in the session for screen fields
   ${params.includeScreens ?
-  `, ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `struct(\n  `)}
-  ${Object.entries(segmentCommon.allScreenFields(params)).map(
+  `${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `struct(\n  `)}
+  ${Object.entries(params.customScreenFields).map(
       ([key, value]) => `first_and_last_screen_values.first_${value}`).join(',\n  ')}
-  ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `) as first_screen_values`)},
+  ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `) as first_screen_values`)}
   -- last values in the session for screen fields
   ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `struct(\n  `)}
-  ${Object.entries(segmentCommon.allScreenFields(params)).map(
+  ${Object.entries(params.customScreenFields).map(
       ([key, value]) => `first_and_last_screen_values.last_${value}`).join(',\n  ')}
   ${ctx.when(global.dataform.projectConfig.warehouse == 'bigquery', `) as last_screen_values`)}` : `` }
 
@@ -129,17 +131,17 @@ select
       segment_sessionized_events.timestamp
       ${params.includeTracks ?
         `,struct(
-        ${Object.entries(segmentCommon.allTrackFields(params)).map(
+        ${Object.entries(params.customTrackFields).map(
       ([key, value]) => `segment_sessionized_tracks.${value}`).join(',\n        ')}
       ) as track` : ``}
       ${params.includePages ?
       `, struct(
-        ${Object.entries(segmentCommon.allPageFields(params)).map(
+        ${Object.entries(params.customPageFields).map(
       ([key, value]) => `segment_sessionized_pages.${value}`).join(',\n        ')}
       ) as page` : ``}
       ${params.includeScreens ?
       `, struct(
-        ${Object.entries(segmentCommon.allScreenFields(params)).map(
+        ${Object.entries(params.customScreenFields).map(
       ([key, value]) => `segment_sessionized_screens.${value}`).join(',\n        ')}
       ) as screen` : ``}
     ) order by segment_sessionized_events.timestamp asc
@@ -158,20 +160,21 @@ from
     `left join ${ctx.ref(params.defaultConfig.schema, `segment_sessionized_${event}`)} as segment_sessionized_${event}
     using(id)`).join(`\n  `))}
 group by
-  session_id, session_index, user_id,
+  session_id, session_index, user_id
+  ${Object.keys(params.customUserFields).length ? `,` : ``}
   ${Object.entries(params.customUserFields).map(
         ([key, value]) => `segment_sessionized_events.${value}`).join(',\n    ')}
 
   ${params.includePages ? 
-  `${Object.entries(segmentCommon.allPageFields(params)).map(
+    `${Object.entries(params.customPageFields).map(
       ([key, value]) => `, first_and_last_page_values.first_${value}`).join(' ')}
-  ${Object.entries(segmentCommon.allPageFields(params)).map(
+  ${Object.entries(params.customPageFields).map(
       ([key, value]) => `, first_and_last_page_values.last_${value}`).join(' ')}` : ``}
 
   ${params.includeScreens ? 
-  `${Object.entries(segmentCommon.allScreenFields(params)).map(
+    `${Object.entries(params.customScreenFields).map(
       ([key, value]) => `, first_and_last_screen_values.first_${value}`).join(' ')}
-  ${Object.entries(segmentCommon.allScreenFields(params)).map(
+  ${Object.entries(params.customScreenFields).map(
       ([key, value]) => `, first_and_last_screen_values.last_${value}`).join(' ')}` : ``}
   )
 
