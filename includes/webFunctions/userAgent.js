@@ -1,7 +1,8 @@
 // source: https://discourse.looker.com/t/parsing-user-agent-into-device-type-manufacturer-browser/1206/2
+// source: https://discourse.looker.com/t/parsing-user-agent-into-device-type-manufacturer-browser/1206/2
 
 function platformStart(user_agent) {
-    return `STRPOS(${user_agent}, '(') + 1`;
+    return `POSITION('(',${user_agent}) + 1`;
 }
 
 function platformRaw(user_agent) {
@@ -11,9 +12,9 @@ function platformRaw(user_agent) {
 function platformEndInitial(user_agent) {
     return `
     CASE
-      WHEN STRPOS(${platformRaw(user_agent)}, ';') = 0
-      THEN STRPOS(${platformRaw(user_agent)}, ')')
-      ELSE STRPOS(${platformRaw(user_agent)}, ';')
+      WHEN POSITION(';',${platformRaw(user_agent)}) = 0
+      THEN POSITION(')',${platformRaw(user_agent)})
+      ELSE POSITION(';',${platformRaw(user_agent)})
     END`;
 }
 
@@ -23,7 +24,13 @@ CASE WHEN ${platformEndInitial(user_agent)} = 0 THEN 0 ELSE ${platformEndInitial
 }
 
 function platform(user_agent) {
-    return `SUBSTR(${user_agent}, ${platformStart(user_agent)}, ${platformEnd(user_agent)})`;
+    return `
+    CASE
+      WHEN SUBSTR(${user_agent}, ${platformStart(user_agent)}, ${platformEnd(user_agent)}) = 'Linux' then 'Android'
+      WHEN SUBSTR(${user_agent}, ${platformStart(user_agent)}, ${platformEnd(user_agent)}) = 'Macintosh' then 'Mac'
+      ELSE SUBSTR(${user_agent}, ${platformStart(user_agent)}, ${platformEnd(user_agent)})
+    END
+    `;
 }
 
 function browser(user_agent) {
