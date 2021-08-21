@@ -1,6 +1,6 @@
 {
     "warehouse": "snowflake",
-    "defaultSchema": "public",
-    "defaultDatabase": "analytics",
-    "assertionSchema": "test_assertions"
+    "defaultSchema": "PUBLIC",
+    "defaultDatabase": "CORE",
+    "assertionSchema": "DATAFORM_TESTS"
 }

@@ -1,5 +1,4 @@
 .DS_Store
-.df-credentials.json
 .vscode
 node_modules/
 package-lock.json

@@ -1,9 +1,1 @@
-{
-  "environment": {
-    "name": "production",
-    "schedule": "daily",
-    "tags": [
-      "daily"
-    ]
-  }
-}
+{}
